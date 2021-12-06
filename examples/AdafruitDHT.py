@@ -20,9 +20,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import sys
-
+import requests
 import Adafruit_DHT
 
+token = 'nxU5hnXJoRv8TlK0ZM30OpwtEX4hKziUtvMdE3DrXeI'
+message = '今天太冷了吧'
+headers = {
+  "Authorization": "Bearer " + token,
+}
+payload = {'message': message }
 
 # Parse command line parameters.
 sensor_args = { '11': Adafruit_DHT.DHT11,
@@ -48,9 +54,11 @@ humidity, temperature = Adafruit_DHT.read_retry(sensor, pin)
 # guarantee the timing of calls to read the sensor).
 # If this happens try again!
 while True:
-	h0,t0=Adafruit_DHT.read_retry(sensor, pin)
-	if h0 is not None and t0 is not None:
-    		print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(t0, h0))
-	else:
-    		print('Failed to get reading. Try again!')
-    		sys.exit(1)
+    h0,t0=Adafruit_DHT.read_retry(sensor, pin)
+    if h0 is not None and t0 is not None:
+        print('Temp={0:0.1f}*C  Humidity={1:0.1f}%'.format(t0, h0))
+        if t0 < 20:
+            requests.post("https://notify-api.line.me/api/notify", headers = headers, params = payload)
+    else:
+        print('Failed to get reading. Try again!')
+        sys.exit(1)
